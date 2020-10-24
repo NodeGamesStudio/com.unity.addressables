@@ -815,6 +815,7 @@ namespace UnityEditor.AddressableAssets.GUI
 
                     menu.AddItem(new GUIContent("Remove Addressables"), false, RemoveEntry, selectedNodes);
                     menu.AddItem(new GUIContent("Simplify Addressable Names"), false, SimplifyAddresses, selectedNodes);
+                    menu.AddItem(new GUIContent("Add Group Prefix To Name"), false, AddGroupPrefixToName, selectedNodes);
                     menu.AddItem(new GUIContent("Export Addressables"), false, CreateExternalEntryCollection, selectedNodes);
                 }
                 else
@@ -1022,6 +1023,24 @@ namespace UnityEditor.AddressableAssets.GUI
                 g.SetDirty(AddressableAssetSettings.ModificationEvent.EntryModified, entries, false, true);
                 AddressableAssetUtility.OpenAssetIfUsingVCIntegration(g);
             }
+            m_Editor.settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryModified, entries, true, false);
+        }
+
+        protected void AddGroupPrefixToName(object context)
+        {
+            List<AssetEntryTreeViewItem> selectedNodes = context as List<AssetEntryTreeViewItem>;
+            if (selectedNodes == null || selectedNodes.Count < 1)
+                return;
+            var entries = new List<AddressableAssetEntry>();
+            HashSet<AddressableAssetGroup> modifiedGroups = new HashSet<AddressableAssetGroup>();
+            foreach (var item in selectedNodes)
+            {
+                item.entry.SetAddress(item.entry.parentGroup.Name + "/" + item.entry.address, false);
+                entries.Add(item.entry);
+                modifiedGroups.Add(item.entry.parentGroup);
+            }
+            foreach (var g in modifiedGroups)
+                g.SetDirty(AddressableAssetSettings.ModificationEvent.EntryModified, entries, false, true);
             m_Editor.settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryModified, entries, true, false);
         }
 
